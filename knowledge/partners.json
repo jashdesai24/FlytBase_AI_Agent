@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Adentu",
+    "regions": ["south_america", "mexico"],
+    "countries": ["Chile", "Peru", "Mexico", "Colombia"],
+    "industries": ["mining", "energy"],
+    "specializations": ["bvlos", "inspection", "mining_operations"],
+    "tier": "gold"
+  },
+  {
+    "name": "The Drone Centre",
+    "regions": ["middle_east", "north_africa"],
+    "countries": ["UAE", "Saudi Arabia", "Qatar", "Bahrain"],
+    "industries": ["utilities", "oil_and_gas", "construction"],
+    "specializations": ["facility_monitoring", "infrastructure"],
+    "tier": "gold"
+  },
+  {
+    "name": "Lorenz Technology",
+    "regions": ["europe"],
+    "countries": ["Denmark", "Norway", "Sweden", "Finland"],
+    "industries": ["energy", "utilities", "maritime"],
+    "specializations": ["wind_energy", "offshore_inspection"],
+    "tier": "silver"
+  },
+  {
+    "name": "Aero Enterprise",
+    "regions": ["europe"],
+    "countries": ["Austria", "Germany", "Switzerland"],
+    "industries": ["energy", "construction", "utilities"],
+    "specializations": ["infrastructure_inspection", "facade_inspection"],
+    "tier": "silver"
+  },
+  {
+    "name": "DroneUp",
+    "regions": ["north_america"],
+    "countries": ["USA"],
+    "industries": ["logistics", "security", "public_safety"],
+    "specializations": ["delivery", "security_operations"],
+    "tier": "gold"
+  },
+  {
+    "name": "SkyeBrowse",
+    "regions": ["north_america"],
+    "countries": ["USA", "Canada"],
+    "industries": ["public_safety", "security"],
+    "specializations": ["emergency_response", "3d_mapping"],
+    "tier": "silver"
+  },
+  {
+    "name": "Gadfin",
+    "regions": ["middle_east", "asia"],
+    "countries": ["Israel", "India", "Singapore"],
+    "industries": ["logistics", "security"],
+    "specializations": ["long_range_delivery", "surveillance"],
+    "tier": "silver"
+  },
+  {
+    "name": "Volatus Aerospace",
+    "regions": ["north_america"],
+    "countries": ["Canada", "USA"],
+    "industries": ["mining", "oil_and_gas", "agriculture"],
+    "specializations": ["survey", "inspection", "mapping"],
+    "tier": "gold"
+  }
+]

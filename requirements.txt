@@ -1,0 +1,12 @@
+langchain>=0.3
+langgraph>=0.4
+google-genai>=1.0
+tavily-python>=0.5
+chromadb>=0.6
+pydantic>=2.10
+python-dotenv>=1.0
+beautifulsoup4>=4.12
+requests>=2.32
+fastapi>=0.111
+uvicorn>=0.30
+sse-starlette>=2.1

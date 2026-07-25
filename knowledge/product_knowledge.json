@@ -1,0 +1,119 @@
+{
+  "company": {
+    "name": "FlytBase",
+    "description": "Enterprise-grade drone autonomy platform enabling organizations to automate and scale commercial drone operations",
+    "tagline": "Internet of Drones (IoD) platform",
+    "founded": 2016,
+    "hq": "Pune, India / San Francisco, USA",
+    "certifications": ["ISO 27001", "SOC 2 Type II", "GDPR Compliant"]
+  },
+  "core_capabilities": [
+    {
+      "name": "Autonomous BVLOS Operations",
+      "description": "Schedule, execute, and monitor Beyond Visual Line of Sight drone missions without human pilots on-site",
+      "key_benefit": "One pilot can supervise multiple drones across multiple sites"
+    },
+    {
+      "name": "Fleet Management Dashboard",
+      "description": "Unified cloud dashboard to manage drones and docking stations across geographically distributed sites",
+      "key_benefit": "Centralized command center for all drone operations"
+    },
+    {
+      "name": "Drone-in-a-Box (DiaB) Support",
+      "description": "Hardware-agnostic support for automated docking stations that enable 24/7 autonomous operations",
+      "key_benefit": "Fully automated drone deployment, charging, and data collection"
+    },
+    {
+      "name": "One-to-Many Operations",
+      "description": "Single operator controls multiple drones and docking stations simultaneously",
+      "key_benefit": "Dramatically reduces operational costs and personnel requirements"
+    },
+    {
+      "name": "AI-Powered Analytics (Verkos AI)",
+      "description": "Computer vision agents for real-time object detection, anomaly detection, and automated responses",
+      "key_benefit": "Automated threat detection and intelligent alerting"
+    },
+    {
+      "name": "Flinks Integration Suite",
+      "description": "Pre-built connectors for enterprise systems including VMS (Milestone, Genetec), alarm systems, IoT sensors, and analytics platforms",
+      "key_benefit": "Seamless integration with existing enterprise infrastructure"
+    },
+    {
+      "name": "Hardware Agnostic",
+      "description": "Works with multiple drone manufacturers and docking station vendors including DJI Dock, DJI Matrice series, and others",
+      "key_benefit": "No vendor lock-in, mix and match hardware"
+    },
+    {
+      "name": "Mission Planning & Automation",
+      "description": "Create automated flight plans, scheduled missions, and trigger-based drone deployments",
+      "key_benefit": "Repeatable, consistent data collection without manual intervention"
+    },
+    {
+      "name": "Live Video Streaming & Recording",
+      "description": "Real-time video feeds from all active drones with recording and playback capabilities",
+      "key_benefit": "Remote situational awareness from anywhere"
+    },
+    {
+      "name": "Safety & Compliance",
+      "description": "Built-in flight safety, strategic/tactical deconfliction, Smart-RTH, BVLOS compliance documentation",
+      "key_benefit": "Regulatory compliance out of the box"
+    }
+  ],
+  "pricing": {
+    "pro_plan": {
+      "price": "$99/month or $999/year",
+      "features": "Unlimited docks, unlimited users, ideal for scaling from pilot to production",
+      "target": "SMB and mid-market, pilot programs"
+    },
+    "enterprise": {
+      "price": "Custom pricing",
+      "features": "Dedicated support, custom integrations, on-premise deployment option, SLA, training",
+      "target": "Large enterprises, government, critical infrastructure"
+    }
+  },
+  "industries_served": [
+    {"industry": "Mining", "use_cases": ["autonomous site inspection", "safety monitoring", "volumetric analysis", "progress tracking"]},
+    {"industry": "Security & Surveillance", "use_cases": ["24/7 perimeter patrol", "intrusion detection", "alarm response", "event monitoring"]},
+    {"industry": "Utilities & Energy", "use_cases": ["power line inspection", "solar panel inspection", "pipeline monitoring", "dam inspection"]},
+    {"industry": "Construction", "use_cases": ["progress documentation", "site mapping", "safety monitoring", "volumetric measurement"]},
+    {"industry": "Public Safety", "use_cases": ["emergency response", "search and rescue", "crowd monitoring", "traffic management"]},
+    {"industry": "Logistics & Warehousing", "use_cases": ["inventory audit", "facility surveillance", "delivery operations"]},
+    {"industry": "Oil & Gas", "use_cases": ["pipeline inspection", "flare stack monitoring", "leak detection", "HSE compliance"]},
+    {"industry": "Maritime & Ports", "use_cases": ["vessel monitoring", "port security", "infrastructure inspection"]},
+    {"industry": "Agriculture", "use_cases": ["crop monitoring", "precision spraying", "field mapping"]}
+  ],
+  "integrations": [
+    {"name": "Milestone VMS", "type": "Video Management"},
+    {"name": "Genetec", "type": "Video Management"},
+    {"name": "Pix4D", "type": "Mapping & Analytics"},
+    {"name": "DroneDeploy", "type": "Data Processing"},
+    {"name": "Strayos", "type": "Mining Analytics"},
+    {"name": "SAP", "type": "Enterprise ERP"},
+    {"name": "SCADA Systems", "type": "Industrial Control"},
+    {"name": "REST API", "type": "Custom Integration"}
+  ],
+  "competitors": [
+    {
+      "name": "Skydio",
+      "weakness": "Proprietary hardware only — vendor lock-in. No multi-vendor fleet support.",
+      "flytbase_advantage": "Hardware-agnostic. Works with any drone. No lock-in."
+    },
+    {
+      "name": "DroneDeploy",
+      "weakness": "Focused on data processing/mapping, not real-time autonomous operations.",
+      "flytbase_advantage": "FlytBase handles live autonomous operations. DroneDeploy is actually a complementary product."
+    },
+    {
+      "name": "Percepto",
+      "weakness": "Closed ecosystem (hardware + software bundle). Limited to their own drone-in-a-box.",
+      "flytbase_advantage": "Open platform. Works with DJI Dock, and others. Customer chooses hardware."
+    },
+    {
+      "name": "Auterion",
+      "weakness": "Developer-focused platform. Less turnkey for enterprise operations teams.",
+      "flytbase_advantage": "Enterprise-ready out of the box. No development required."
+    }
+  ],
+  "partner_count": 125,
+  "deployment_options": ["Cloud SaaS", "On-Premise", "Hybrid"]
+}
