@@ -27,11 +27,13 @@ MODEL_MAP = {
     "gemini-flash": "gemini-2.5-flash",
 }
 
-# Fallback sequence using reliable Google AI Studio endpoints
+# Fallback sequence using verified active 2026 Google AI Studio flash models
 FALLBACK_MODELS = [
     "gemini-2.5-flash",
     "gemini-2.0-flash",
-    "gemini-1.5-flash",
+    "gemini-flash-latest",
+    "gemini-3-flash-preview",
+    "gemini-3.5-flash",
 ]
 
 MAX_RETRIES = 1
