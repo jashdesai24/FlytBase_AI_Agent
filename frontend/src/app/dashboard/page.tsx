@@ -112,7 +112,7 @@ export default function Dashboard() {
     setProgress(0);
     setPipelineError(null);
     setAgentStates({
-      intake: "idle", research: "idle", contact: "idle", 
+      intake: "running", research: "idle", contact: "idle", 
       qualification: "idle", case_study: "idle", email: "idle", handoff: "idle"
     });
 

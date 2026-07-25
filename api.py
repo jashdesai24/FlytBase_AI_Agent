@@ -56,6 +56,20 @@ async def process_lead(request: Request):
 
     async def event_generator():
         try:
+            # IMMEDIATELY yield start packet so Render flushes stream & UI activates without delay
+            yield {
+                "event": "update",
+                "data": json.dumps({
+                    "node": "init",
+                    "output": {
+                        "execution_log": [
+                            "⚡ Connected to FastAPI orchestration engine.",
+                            "🚀 Engaging Agent 1: Lead Intake & Normalization..."
+                        ]
+                    }
+                }, cls=SafeEncoder),
+            }
+
             from graph.workflow import graph
 
             for event in graph.stream(initial_state, stream_mode="updates"):

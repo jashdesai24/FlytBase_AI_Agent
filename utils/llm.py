@@ -19,24 +19,23 @@ T = TypeVar("T", bound=BaseModel)
 
 _client: genai.Client | None = None
 
-# Default to modern 2026 Gemini models
+# Default to modern reliable Gemini models
 MODEL_MAP = {
-    "gpt-4o": "gemini-3.6-flash",
-    "gpt-4o-mini": "gemini-3.6-flash",
-    "gemini-2.0-flash": "gemini-3.6-flash",
-    "gemini-flash": "gemini-3.6-flash",
+    "gpt-4o": "gemini-2.5-flash",
+    "gpt-4o-mini": "gemini-2.5-flash",
+    "gemini-2.0-flash": "gemini-2.5-flash",
+    "gemini-flash": "gemini-2.5-flash",
 }
 
-# Fallback sequence if quota on one model is exhausted
+# Fallback sequence using reliable Google AI Studio endpoints
 FALLBACK_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-flash-latest",
-    "gemma-4-31b-it",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
 ]
 
-MAX_RETRIES = 2
-INITIAL_BACKOFF = 3  # seconds
+MAX_RETRIES = 1
+INITIAL_BACKOFF = 1  # seconds
 
 
 def get_client() -> genai.Client:
@@ -53,7 +52,7 @@ def get_client() -> genai.Client:
 
 
 def _resolve_model(model: str) -> str:
-    return MODEL_MAP.get(model, "gemini-3.6-flash")
+    return MODEL_MAP.get(model, "gemini-2.5-flash")
 
 
 def _execute_with_fallback(call_func):
@@ -90,7 +89,7 @@ def _execute_with_fallback(call_func):
 def call_llm(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gemini-3.6-flash",
+    model: str = "gemini-2.5-flash",
     temperature: float = 0.3,
     max_tokens: int = 4000,
 ) -> str:
@@ -157,7 +156,7 @@ def call_llm_structured(
     system_prompt: str,
     user_prompt: str,
     response_model: Type[T],
-    model: str = "gemini-3.6-flash",
+    model: str = "gemini-2.5-flash",
     temperature: float = 0.2,
     max_tokens: int = 4000,
 ) -> T:
