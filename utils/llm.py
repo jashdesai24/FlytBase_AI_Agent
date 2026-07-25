@@ -1,12 +1,14 @@
 """
 LLM client wrapper — uses Google Gemini (google-genai SDK).
 Free tier: 15 requests/min, 1500 requests/day.
-Includes automatic model fallback across 2026 models and exponential backoff for rate limits.
+Includes a PROACTIVE global rate limiter that prevents 429 errors entirely,
+plus automatic model fallback and proper quota recovery waits.
 """
 
 import os
 import json
 import time
+import threading
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -27,15 +29,49 @@ MODEL_MAP = {
     "gemini-flash": "gemini-2.5-flash",
 }
 
-# Fallback sequence using distinct active quota tiers (Flash, Flash-Lite, Pro)
+# Primary + fallback models (all share the same API key quota, but
+# fallback is useful in case a specific model endpoint is down)
 FALLBACK_MODELS = [
     "gemini-2.5-flash",
-    "gemini-2.0-flash-lite-001",  # distinct high-concurrency token pool
-    "gemini-2.5-pro",             # distinct Pro tier token pool
+    "gemini-2.0-flash",
+    "gemini-2.5-flash-lite",
 ]
 
-MAX_RETRIES = 1
-INITIAL_BACKOFF = 2  # short 2-second pause before instantly trying next quota tier
+MAX_RETRIES = 2
+QUOTA_RECOVERY_WAIT = 10  # seconds to wait on 429 for sliding window to clear
+
+
+# ── Global Proactive Rate Limiter ──────────────────────────────────────────────
+# Ensures we NEVER exceed 15 RPM by tracking call timestamps and sleeping
+# proactively BEFORE making a call, rather than reacting to 429 errors.
+
+_call_timestamps: list[float] = []
+_rate_lock = threading.Lock()
+RPM_LIMIT = 12  # Stay safely under 15 RPM ceiling (buffer of 3)
+WINDOW_SECONDS = 60
+
+
+def _wait_for_rate_limit():
+    """Proactively block until we have capacity under the RPM limit."""
+    with _rate_lock:
+        now = time.time()
+        # Prune timestamps older than 60 seconds
+        _call_timestamps[:] = [t for t in _call_timestamps if now - t < WINDOW_SECONDS]
+
+        if len(_call_timestamps) >= RPM_LIMIT:
+            # Must wait until the oldest call exits the 60-second window
+            oldest = _call_timestamps[0]
+            wait_time = WINDOW_SECONDS - (now - oldest) + 1.0
+            if wait_time > 0:
+                print(f"[Rate Limiter] At {len(_call_timestamps)}/{RPM_LIMIT} RPM capacity. "
+                      f"Pausing {wait_time:.1f}s for window to clear...")
+                time.sleep(wait_time)
+                # Clean up after sleeping
+                now = time.time()
+                _call_timestamps[:] = [t for t in _call_timestamps if now - t < WINDOW_SECONDS]
+
+        # Register this call
+        _call_timestamps.append(time.time())
 
 
 def get_client() -> genai.Client:
@@ -56,36 +92,38 @@ def _resolve_model(model: str) -> str:
 
 
 def _execute_with_fallback(call_func):
-    """Execute API call with model fallback if quota is exhausted or rate limited."""
+    """Execute API call with proactive rate limiting, retries, and model fallback."""
     last_err = None
-    
-    # First try the requested call, then try fallback models
-    models_to_try = FALLBACK_MODELS
-    
-    for model_id in models_to_try:
+
+    for model_id in FALLBACK_MODELS:
         for attempt in range(MAX_RETRIES + 1):
             try:
+                # Proactively wait before every call to stay under 15 RPM
+                _wait_for_rate_limit()
                 return call_func(model_id)
             except Exception as e:
                 last_err = e
                 err_str = str(e).lower()
-                is_quota_exhausted = any(k in err_str for k in [
+                is_retriable = any(k in err_str for k in [
                     "resource_exhausted", "429", "rate limit", "quota",
-                    "resource has been exhausted", "too many requests", "404", "not found"
+                    "resource has been exhausted", "too many requests",
                 ])
-                if is_quota_exhausted:
-                    if "404" in err_str or "not found" in err_str:
-                        print(f"[{model_id}] Model not found (404). Switching immediately to fallback model...")
-                        break
+                is_not_found = "404" in err_str or "not found" in err_str
+
+                if is_not_found:
+                    print(f"[{model_id}] Model not found (404). Trying next model...")
+                    break  # Skip to next fallback model immediately
+                elif is_retriable:
                     if attempt < MAX_RETRIES:
-                        wait = min(15, INITIAL_BACKOFF * (2 ** attempt))
-                        print(f"[{model_id} rate limit/quota] Waiting {wait}s before retry ({attempt+1}/{MAX_RETRIES})...")
-                        time.sleep(wait)
+                        print(f"[{model_id}] 429 quota hit. Waiting {QUOTA_RECOVERY_WAIT}s "
+                              f"for sliding window to clear (attempt {attempt+1}/{MAX_RETRIES})...")
+                        time.sleep(QUOTA_RECOVERY_WAIT)
                     else:
-                        print(f"[{model_id}] Quota exhausted after retries. Switching to next fallback model...")
-                        break  # Break out of attempts loop to switch to next fallback model
+                        print(f"[{model_id}] Still exhausted after {MAX_RETRIES} retries. "
+                              f"Trying next model...")
+                        break
                 else:
-                    raise
+                    raise  # Non-quota error, raise immediately
     raise last_err
 
 
@@ -189,45 +227,17 @@ def call_llm_structured(
     except Exception:
         pass
     
-    # Attempt 2: repair truncated JSON
+    # Attempt 2: repair truncated JSON (no extra API call needed)
     try:
         repaired = _repair_truncated_json(raw)
         data = json.loads(repaired)
         return response_model.model_validate(data)
-    except Exception:
-        pass
-    
-    # Attempt 3: retry the LLM call with higher token limit
-    try:
-        def _retry_call(model_id: str):
-            response = client.models.generate_content(
-                model=model_id,
-                contents=user_prompt + "\n\nIMPORTANT: Keep your response concise. Use short strings. Do not write long paragraphs.",
-                config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
-                    temperature=temperature,
-                    max_output_tokens=min(max_tokens * 2, 16000),
-                    response_mime_type="application/json",
-                    response_schema=response_model,
-                ),
-            )
-            return response.text or "{}"
-        
-        raw2 = _execute_with_fallback(_retry_call)
-        data = json.loads(raw2)
-        return response_model.model_validate(data)
     except Exception as e:
-        # Try repairing the retry response too
-        try:
-            repaired2 = _repair_truncated_json(raw2)
-            data = json.loads(repaired2)
-            return response_model.model_validate(data)
-        except Exception:
-            raise ValueError(
-                f"Failed to parse Gemini response into {response_model.__name__}.\n"
-                f"Error: {e}\n"
-                f"Raw response: {raw[:500]}"
-            )
+        raise ValueError(
+            f"Failed to parse Gemini response into {response_model.__name__}.\n"
+            f"Error: {e}\n"
+            f"Raw response: {raw[:500]}"
+        )
 
 
 def embed_text(text: str) -> list[float]:
@@ -235,6 +245,7 @@ def embed_text(text: str) -> list[float]:
     client = get_client()
 
     def _do_call():
+        _wait_for_rate_limit()  # Proactive rate limiting for embeddings too
         response = client.models.embed_content(
             model="gemini-embedding-2",
             contents=text,
@@ -246,6 +257,7 @@ def embed_text(text: str) -> list[float]:
             return _do_call()
         except Exception as e:
             if attempt < 2 and any(k in str(e).lower() for k in ["429", "resource_exhausted", "quota", "rate"]):
-                time.sleep(3)
+                time.sleep(QUOTA_RECOVERY_WAIT)
             else:
                 raise
+
