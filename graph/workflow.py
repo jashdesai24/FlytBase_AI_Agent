@@ -245,8 +245,9 @@ def handoff_node(state: dict) -> dict:
 
 def end_disqualified_node(state: dict) -> dict:
     """Terminal node for disqualified leads."""
-    score = state.get("qualification", {}).get("total_score", 0)
-    grade = state.get("qualification", {}).get("grade", "F")
+    qual = state.get("qualification") or {}
+    score = qual.get("total_score", 0)
+    grade = qual.get("grade", "F")
     return {
         "current_agent": "complete_disqualified",
         "execution_log": [
