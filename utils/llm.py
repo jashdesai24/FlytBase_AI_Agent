@@ -36,8 +36,8 @@ FALLBACK_MODELS = [
     "gemini-3.5-flash",
 ]
 
-MAX_RETRIES = 1
-INITIAL_BACKOFF = 1  # seconds
+MAX_RETRIES = 3
+INITIAL_BACKOFF = 4  # seconds to allow 15 RPM rolling quota window to clear
 
 
 def get_client() -> genai.Client:
@@ -76,12 +76,15 @@ def _execute_with_fallback(call_func):
                     "resource has been exhausted", "too many requests", "404", "not found"
                 ])
                 if is_quota_exhausted:
-                    if attempt < MAX_RETRIES and "404" not in err_str:
-                        wait = INITIAL_BACKOFF * (2 ** attempt)
-                        print(f"[{model_id} busy/rate limit] Waiting {wait}s before retry...")
+                    if "404" in err_str or "not found" in err_str:
+                        print(f"[{model_id}] Model not found (404). Switching immediately to fallback model...")
+                        break
+                    if attempt < MAX_RETRIES:
+                        wait = min(15, INITIAL_BACKOFF * (2 ** attempt))
+                        print(f"[{model_id} rate limit/quota] Waiting {wait}s before retry ({attempt+1}/{MAX_RETRIES})...")
                         time.sleep(wait)
                     else:
-                        print(f"[{model_id}] Quota exhausted or unavailable. Switching to fallback model...")
+                        print(f"[{model_id}] Quota exhausted after retries. Switching to next fallback model...")
                         break  # Break out of attempts loop to switch to next fallback model
                 else:
                     raise
