@@ -29,16 +29,15 @@ MODEL_MAP = {
     "gemini-flash": "gemini-2.5-flash",
 }
 
-# Primary + fallback models (all share the same API key quota, but
-# fallback is useful in case a specific model endpoint is down)
+# Primary + fallback models — VERIFIED active via models.list() on 2026-07-25
 FALLBACK_MODELS = [
     "gemini-2.5-flash",
     "gemini-2.0-flash",
-    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash-lite",
 ]
 
 MAX_RETRIES = 2
-QUOTA_RECOVERY_WAIT = 10  # seconds to wait on 429 for sliding window to clear
+QUOTA_RECOVERY_WAIT = 30  # wait 30s on 429 so Google's 60s sliding window actually clears
 
 
 # ── Global Proactive Rate Limiter ──────────────────────────────────────────────
