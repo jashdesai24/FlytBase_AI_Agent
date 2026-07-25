@@ -21,23 +21,24 @@ T = TypeVar("T", bound=BaseModel)
 
 _client: genai.Client | None = None
 
-# Default to modern reliable Gemini models
+# Default model mappings — gemini-3.5-flash is primary (2.5-flash deprecated for new projects)
 MODEL_MAP = {
-    "gpt-4o": "gemini-2.5-flash",
-    "gpt-4o-mini": "gemini-2.5-flash",
-    "gemini-2.0-flash": "gemini-2.5-flash",
-    "gemini-flash": "gemini-2.5-flash",
+    "gpt-4o": "gemini-3.5-flash",
+    "gpt-4o-mini": "gemini-3.5-flash",
+    "gemini-2.0-flash": "gemini-3.5-flash",
+    "gemini-flash": "gemini-3.5-flash",
+    "gemini-2.5-flash": "gemini-3.5-flash",
 }
 
-# Primary + fallback models — VERIFIED active via models.list() on 2026-07-25
+# Fallback sequence — verified working for new 2026 Google projects
 FALLBACK_MODELS = [
-    "gemini-2.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.6-flash",
     "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
 ]
 
-MAX_RETRIES = 2
-QUOTA_RECOVERY_WAIT = 30  # wait 30s on 429 so Google's 60s sliding window actually clears
+MAX_RETRIES = 4
+QUOTA_RECOVERY_WAIT = 15  # fallback if Google doesn't specify retry delay
 
 
 # ── Global Proactive Rate Limiter ──────────────────────────────────────────────
@@ -87,11 +88,21 @@ def get_client() -> genai.Client:
 
 
 def _resolve_model(model: str) -> str:
-    return MODEL_MAP.get(model, "gemini-2.5-flash")
+    return MODEL_MAP.get(model, "gemini-3.5-flash")
+
+
+def _parse_retry_delay(err_str: str) -> float:
+    """Extract Google's recommended retry delay from 429 error messages.
+    Google returns: 'Please retry in 11.30538416s' — we parse and use that exact value."""
+    import re
+    match = re.search(r'retry in (\d+\.?\d*)s', err_str.lower())
+    if match:
+        return float(match.group(1)) + 1.0  # Add 1s safety buffer
+    return 15.0  # Fallback if we can't parse
 
 
 def _execute_with_fallback(call_func):
-    """Execute API call with proactive rate limiting, retries, and model fallback."""
+    """Execute API call with proactive rate limiting and Google-guided retry delays."""
     last_err = None
 
     for model_id in FALLBACK_MODELS:
@@ -102,21 +113,24 @@ def _execute_with_fallback(call_func):
                 return call_func(model_id)
             except Exception as e:
                 last_err = e
-                err_str = str(e).lower()
-                is_retriable = any(k in err_str for k in [
+                err_str = str(e)
+                err_lower = err_str.lower()
+                is_retriable = any(k in err_lower for k in [
                     "resource_exhausted", "429", "rate limit", "quota",
                     "resource has been exhausted", "too many requests",
                 ])
-                is_not_found = "404" in err_str or "not found" in err_str
+                is_not_found = "404" in err_lower or "not found" in err_lower
 
                 if is_not_found:
                     print(f"[{model_id}] Model not found (404). Trying next model...")
                     break  # Skip to next fallback model immediately
                 elif is_retriable:
                     if attempt < MAX_RETRIES:
-                        print(f"[{model_id}] 429 quota hit. Waiting {QUOTA_RECOVERY_WAIT}s "
-                              f"for sliding window to clear (attempt {attempt+1}/{MAX_RETRIES})...")
-                        time.sleep(QUOTA_RECOVERY_WAIT)
+                        # Parse Google's exact recommended retry delay
+                        wait = _parse_retry_delay(err_str)
+                        print(f"[{model_id}] 429 quota hit. Google says retry in {wait:.1f}s "
+                              f"(attempt {attempt+1}/{MAX_RETRIES})...")
+                        time.sleep(wait)
                     else:
                         print(f"[{model_id}] Still exhausted after {MAX_RETRIES} retries. "
                               f"Trying next model...")
@@ -129,7 +143,7 @@ def _execute_with_fallback(call_func):
 def call_llm(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gemini-2.5-flash",
+    model: str = "gemini-3.5-flash",
     temperature: float = 0.3,
     max_tokens: int = 4000,
 ) -> str:
@@ -196,7 +210,7 @@ def call_llm_structured(
     system_prompt: str,
     user_prompt: str,
     response_model: Type[T],
-    model: str = "gemini-2.5-flash",
+    model: str = "gemini-3.5-flash",
     temperature: float = 0.2,
     max_tokens: int = 4000,
 ) -> T:
