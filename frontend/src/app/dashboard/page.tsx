@@ -147,6 +147,14 @@ export default function Dashboard() {
             
             try {
               const payload = JSON.parse(dataStr);
+              if (payload.error || !payload.output) {
+                const errMsg = payload.error || "Unknown error occurred on backend";
+                allLogs = [...allLogs, `🚫 Backend Execution Failed: ${errMsg}`];
+                setLogs([...allLogs]);
+                setPipelineError(errMsg);
+                setIsRunning(false);
+                return;
+              }
               const { node, output } = payload;
               
               // Accumulate execution logs (deltas from reducer)

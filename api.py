@@ -79,7 +79,14 @@ async def process_lead(request: Request):
                 "data": json.dumps({"error": str(e), "traceback": error_msg}),
             }
 
-    return EventSourceResponse(event_generator())
+    return EventSourceResponse(
+        event_generator(),
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Critical for Nginx & Render proxies
+        },
+    )
 
 
 @app.get("/health")
