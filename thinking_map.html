@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlytBase Agentic BDR — Engineering Thinking & Mind Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface-card: #121215;
+            --surface-hover: #18181c;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(99, 102, 241, 0.4);
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-indigo: #6366f1;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-sky: #0ea5e9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Decorative ambient glow */
+        .ambient-glow {
+            position: fixed;
+            top: -20%;
+            left: 20%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, rgba(16,185,129,0.03) 50%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tag-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge.pulse::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 800px;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        .section-box {
+            background: var(--surface-card);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .section-box:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transition: border-color 0.3s ease;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .step-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-indigo);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.3rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        /* Mermaid Mindmap styling */
+        .mindmap-container {
+            background: #0d0d10;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem 1rem;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .thought-card {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .thought-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-highlight);
+        }
+
+        .card-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent-emerald);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
+
+        .card-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .tradeoff-box {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tradeoff-label {
+            font-weight: 600;
+            color: var(--accent-amber);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Interactive Timeline / Accordion */
+        .accordion-item {
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            background: #141418;
+        }
+
+        .accordion-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .accordion-header:hover {
+            background: #1c1c22;
+        }
+
+        .accordion-content {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            display: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 1rem;
+        }
+
+        .accordion-item.active .accordion-content {
+            display: block;
+        }
+
+        .arrow-icon {
+            transition: transform 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .accordion-item.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .code-snippet {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.85em;
+            color: var(--accent-sky);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+        }
+
+        ul.styled-list {
+            list-style-type: none;
+            margin-top: 0.75rem;
+            space-y: 0.5rem;
+        }
+
+        ul.styled-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        ul.styled-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-indigo);
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <header>
+        <div class="tag-row">
+            <span class="badge pulse">Live Artifact Ready</span>
+            <span class="badge">Inbound BDR Hackathon</span>
+            <span class="badge" style="color: var(--accent-sky); border-color: rgba(14, 165, 233, 0.3);">LangGraph × Gemini 2.5 × Next.js</span>
+        </div>
+        <h1>Problem Deconstruction & Architecture Mind Map</h1>
+        <p class="subtitle">A visual walkthrough of the engineering decisions, design trade-offs, and system architecture forged to convert raw top-of-funnel inbound forms into verified sales intelligence and autonomous outreach cadences.</p>
+    </header>
+
+    <main class="grid-layout">
+        
+        <!-- SECTION 1: INTERACTIVE VISUAL MIND MAP -->
+        <section class="section-box">
+            <div class="section-header">
+                <div class="section-title">
+                    <span class="step-num">MAP 01</span>
+                    <span>Visual Engineering Mind Map</span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Rendered dynamically via Mermaid.js</span>
+            </div>
+            
+            <div class="mindmap-container">
+                <pre class="mermaid">
+mindmap
+  root((Inbound BDR<br>AI Pipeline))
+    Core Problem
+      Manual 45-min research per lead
+      LLM Hallucinations on lead scoring
+      Inconsistent unstructured form data
+      Slow feedback cycles
+    Architectural Strategy
+      LangGraph Directed Acyclic Graph
+        Why? Enforces strict data schemas
+        No conversational drift between nodes
+      Simultaneous Branch Execution
+        Agent 2: Live Tavily Web Search
+        Agent 3: Contact Persona Matrix
+        Cuts runtime almost in half
+      Deterministic Evaluation Core
+        Agent 4: Pure Python Scoring Rules
+        Zero LLM score guessing
+        Audit-ready point breakdowns
+    Contextual RAG
+      ChromaDB Vector Matching
+      Embedded Historical Case Studies
+      Tailored statistical outreach hooks
+    Resilience & Streaming
+      Server-Sent Events SSE
+        Anti-buffering reverse proxy headers
+        Token-by-token terminal display
+      Quota & Fallback Controller
+        Gemini 2.5 Flash Primary
+        Exponential sliding backoff 4s / 8s / 15s
+        100% execution completion guarantee
+                </pre>
+            </div>
+        </section>
+
+        <!-- SECTION 2: CORE PROBLEM DECONSTRUCTION -->
+        <section class="section-box">
+            <div class="section-header">
+                <div class="section-title">
+                    <span class="step-num">LOGIC 02</span>
+                    <span>How I Deconstructed & Thought Through The Problem</span>
+                </div>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: var(--accent-rose);">1. The Latency & Accuracy Bottleneck</span>
+                        <h3 class="card-title">Why Monolithic Prompts Fail</h3>
+                        <p class="card-text">Asking a single large LLM prompt to research a company, analyze a contact, score a lead, and draft an email creates severe hallucination risks and massive latency. Without hard data contracts, output formatting degrades rapidly.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Split into 7 functional micro-agents connected by strict Pydantic typed data state passed across a LangGraph pipeline.
+                    </div>
+                </div>
+
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: var(--accent-indigo);">2. Speed vs. Depth Trade-off</span>
+                        <h3 class="card-title">Parallelizing Intelligence Gather</h3>
+                        <p class="card-text">Sequential pipeline execution results in long wait times (30+ seconds). When examining dependencies, I realized Account Research and Contact Intelligence have zero reliance on each other after normalization.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Engineered simultaneous execution branches in LangGraph, gathering company facts & buyer seniority simultaneously.
+                    </div>
+                </div>
+
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: var(--accent-emerald);">3. The Hallucination Problem</span>
+                        <h3 class="card-title">Deterministic Scoring Core</h3>
+                        <p class="card-text">Sales managers will not trust an AI agent that assigns random "80/100" lead scores based on prompt mood. Evaluation criteria must be absolute, verifiable, and explainable to Account Executives.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Built Agent 4 as a 100% deterministic Python evaluation model (+25 ICP size, +20 C-Suite/VP authority, +15 corporate domain, +20 intent).
+                    </div>
+                </div>
+
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: var(--accent-amber);">4. Personalization & Relevance</span>
+                        <h3 class="card-title">Vector Case Study RAG</h3>
+                        <p class="card-text">Cold emails containing boilerplate praise get ignored. To generate real replies, an agent must connect a prospect's industry pain hypothesis with actual documented past customer success metrics.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Embedded historical FlytBase drone deployment stories in ChromaDB vector store, dynamically pairing them into a 3-touch cadence.
+                    </div>
+                </div>
+
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: var(--accent-sky);">5. User Experience & Visibility</span>
+                        <h3 class="card-title">Real-time SSE Streaming</h3>
+                        <p class="card-text">In enterprise software, static spinning loaders cause users to assume the app has crashed during complex multi-agent reasoning loops. We needed live observability into internal agent thoughts.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Deployed Starlette Server-Sent Events (SSE) with strict anti-buffering HTTP headers to feed live agent logs directly into the console.
+                    </div>
+                </div>
+
+                <div class="thought-card">
+                    <div>
+                        <span class="card-tag" style="color: #c084fc;">6. Production Reliability</span>
+                        <h3 class="card-title">Concurrency & API Quotas</h3>
+                        <p class="card-text">Free tier Gemini APIs enforce 15 Requests Per Minute (RPM) limits. When running parallel nodes and multiple test demos rapidly, API exhaustion causes fatal pipeline crashes without mitigation.</p>
+                    </div>
+                    <div class="tradeoff-box">
+                        <span class="tradeoff-label">DECISION:</span> Developed an automated exponential backoff engine (4s/8s/15s) with model failover (Gemini 2.5 Flash → 2.0 Flash) to absorb traffic spikes.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: DEEP-DIVE ARCHITECTURAL ACCORDION -->
+        <section class="section-box">
+            <div class="section-header">
+                <div class="section-title">
+                    <span class="step-num">FLOW 03</span>
+                    <span>End-to-End Execution Flow Details (Click to Expand)</span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Interactive Component Details</span>
+            </div>
+
+            <div class="accordion">
+                <div class="accordion-item active" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span>Phase 1: Ingestion, Schema Normalization & Domain Validation (Agent 1)</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Raw leads originate from various website endpoints (pricing page, blog downloads, contact forms). Before any external APIs are invoked, Agent 1 cleans and enforces typed structures:</p>
+                        <ul class="styled-list">
+                            <li><strong>Schema Enforcement:</strong> Parses unstructured input directly into a validated <span class="code-snippet">LeadRecord</span> Pydantic model.</li>
+                            <li><strong>Domain Classification:</strong> Extracts domain addresses and marks whether the email is corporate or generic educational/freemail (<span class="code-snippet">.edu</span>, <span class="code-snippet">gmail.com</span>).</li>
+                            <li><strong>Signal Parsing:</strong> Scans free-text form messages to extract urgency cues, use cases, and competitor references.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span>Phase 2: Simultaneous Parallel Web Intelligence (Agents 2 & 3)</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>To minimize latency without sacrificing analytical rigor, LangGraph forks execution into two concurrent processing tracks:</p>
+                        <ul class="styled-list">
+                            <li><strong>Agent 2 (Account Research):</strong> Fires live web search queries via Tavily API to identify employee count, enterprise industry classification, active hardware ecosystem, and strategic corporate initiatives/news.</li>
+                            <li><strong>Agent 3 (Contact Persona Matrix):</strong> Classifies buyer job titles into standardized hierarchy levels (<span class="code-snippet">C_SUITE</span>, <span class="code-snippet">VP</span>, <span class="code-snippet">DIRECTOR</span>, <span class="code-snippet">IC</span>), evaluating strategic budgetary decision authority.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span>Phase 3: Deterministic Lead Scoring & Conditional Branching (Agent 4)</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Both parallel intelligence streams converge into the deterministic evaluation engine. This removes AI subjectivity:</p>
+                        <ul class="styled-list">
+                            <li><strong>Rule-Based Point Matrix:</strong> Evaluates data against strict rules: Enterprise size (>10k emps = +25 pts), Seniority (C-Suite/VP = +20 pts), Verified Corporate Email (+15 pts), and High Intent Mentions (+20 pts).</li>
+                            <li><strong>Conditional Edge Routing (<span class="code-snippet">should_nurture_or_advance</span>):</strong> Leads scoring <strong>&ge; 40 points (Grade A & B)</strong> route forward into active sales sequence generation. Leads scoring <strong>&lt; 40 points (Grade C & D)</strong> break out immediately into automated marketing Nurture sequences, saving valuable AE follow-up time.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span>Phase 4: Case Study RAG & Multi-Touch Outbound Cadence (Agents 5, 6 & 7)</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>For qualified opportunities, the final phase prepares a comprehensive sales-ready operational package:</p>
+                        <ul class="styled-list">
+                            <li><strong>Agent 5 (Vector Retrieval):</strong> Performs semantic matching over <span class="code-snippet">knowledge/case_studies.json</span> via ChromaDB, pulling exact customer reference stories matching the prospect's operational sector.</li>
+                            <li><strong>Agent 6 (GTM Email Engine):</strong> Synthesizes intelligence and case studies into a high-converting 3-touch outbound sequence: (Touch 1: Initial Value & Pain Hypothesis, Touch 2: Statistical Case Study Proof, Touch 3: Executive Follow-up).</li>
+                            <li><strong>Agent 7 (AE Handoff Brief):</strong> Summarizes the complete lead record, firmographic profile, qualification audit trail, and drafted sequences into an actionable briefing package for Account Executives.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Created for the Inbound BDR Hiring Hackathon Submission &bull; Powered by Antigravity, LangGraph & Google DeepMind Gemini</p>
+    </footer>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'dark',
+            mindmap: {
+                padding: 20,
+                useMaxWidth: true
+            }
+        });
+
+        // Interactive Accordion Toggle
+        function toggleAccordion(element) {
+            const isActive = element.classList.contains('active');
+            // Close all accordions
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // Open clicked accordion if it wasn't active
+            if (!isActive) {
+                element.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
