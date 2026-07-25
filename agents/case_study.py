@@ -42,29 +42,9 @@ def _get_collection():
     from chromadb.utils import embedding_functions
     import os
 
-    api_key = os.getenv("GEMINI_API_KEY", "")
-
-    # Use Gemini embeddings via custom function, else ChromaDB default
-    if api_key and not api_key.startswith("your-"):
-        from google import genai as genai_module
-
-        class GeminiEmbeddingFunction(embedding_functions.EmbeddingFunction):
-            def __init__(self, api_key: str):
-                self._client = genai_module.Client(api_key=api_key)
-
-            def __call__(self, input: list[str]) -> list[list[float]]:
-                results = []
-                for text in input:
-                    response = self._client.models.embed_content(
-                        model="gemini-embedding-2",
-                        contents=text,
-                    )
-                    results.append(response.embeddings[0].values)
-                return results
-
-        ef = GeminiEmbeddingFunction(api_key=api_key)
-    else:
-        ef = embedding_functions.DefaultEmbeddingFunction()
+    # Use ChromaDB's zero-latency local default embedding function to prevent exhausting
+    # Google's free-tier API quota (15 RPM) during vector index initialization
+    ef = embedding_functions.DefaultEmbeddingFunction()
 
 
     client = chromadb.Client()

@@ -27,17 +27,15 @@ MODEL_MAP = {
     "gemini-flash": "gemini-2.5-flash",
 }
 
-# Fallback sequence using verified active 2026 Google AI Studio flash models
+# Fallback sequence using distinct active quota tiers (Flash, Flash-Lite, Pro)
 FALLBACK_MODELS = [
     "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-flash-latest",
-    "gemini-3-flash-preview",
-    "gemini-3.5-flash",
+    "gemini-2.0-flash-lite-001",  # distinct high-concurrency token pool
+    "gemini-2.5-pro",             # distinct Pro tier token pool
 ]
 
-MAX_RETRIES = 3
-INITIAL_BACKOFF = 4  # seconds to allow 15 RPM rolling quota window to clear
+MAX_RETRIES = 1
+INITIAL_BACKOFF = 2  # short 2-second pause before instantly trying next quota tier
 
 
 def get_client() -> genai.Client:
